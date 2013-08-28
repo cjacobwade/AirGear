@@ -20,8 +20,7 @@ public class Player : MonoBehaviour {
 	CharacterController cc, camController;
 	
 	#region CameraVars
-	public int rotateSpeed;
-	public float minCamX, maxCamX, cameraRotationX;
+	public Vector2 rotateSpeed, camHeight, cameraRot;
 	public Vector3 cameraOffset; //Position relative to player
 	public GameObject cam;
 	#endregion
@@ -88,44 +87,23 @@ public class Player : MonoBehaviour {
 	
 	void CameraControl()//Controls camera view
 	{
-//		cam.transform.LookAt(transform);
-//		if(cam.transform.localPosition.x > minCamX && cam.transform.localPosition.x < maxCamX)
-//			camController.Move(Vector3.right*Input.GetAxis("Mouse X")*rotateSpeed*Time.deltaTime);
-//		else
-//		{
-//			if(cam.transform.localPosition.x < minCamX)
-//				cam.transform.localPosition = new Vector3(minCamX,cam.transform.localPosition.y,cam.transform.localPosition.z);
-//			if(cam.transform.localPosition.x > maxCamX)
-//				cam.transform.localPosition = new Vector3(maxCamX,cam.transform.localPosition.y,cam.transform.localPosition.z);
-//		}
-		//cam.transform.rotation = Quaternion.Euler(0,transform.rotation.eulerAngles.y,0);
+		cam.transform.position = transform.position + cameraOffset;
+		cameraRot.y += Input.GetAxis("Mouse X")*rotateSpeed.x;//Horizontal control
+		cameraRot.x += -Input.GetAxis("Mouse Y")*rotateSpeed.y;//Vertical control
+
+		//Keep rotations within -360 and 360
+		if(cameraRot.y > 360) cameraRot.y -= 360;
+		if(cameraRot.y < -360) cameraRot.y += 360;
+
+		//Regulate camera height
+		if (cameraRot.x < camHeight.x) cameraRot.x = camHeight.x;
+		if (cameraRot.x > camHeight.y) cameraRot.x = camHeight.y;
+
+		//Set camera rotation
+		//cam.transform.eulerAngles = cameraRot;
+		cam.transform.Rotate(new Vector3(cameraRot.x, cameraRot.y,0)*Time.deltaTime, Space.World);
+		//transform.eulerAngles = new Vector3(transform.eulerAngles.x, cameraRot.y ,transform.eulerAngles.z);
 	}
 
-//	void CameraMinMax()//Correct vertical camera to stay within bounds
-//	{
-//		float zRot;
-//		if(Input.GetAxis("Mouse Y")>.5)
-//			zRot=.5f;
-//		else if(Input.GetAxis("Mouse Y")<-.5)
-//			zRot=-.5f;
-//		else
-//			zRot = Input.GetAxis("Mouse Y");
-//
-//		if(cameraRotationX >= minCamX && cameraRotationX <= maxCamX)
-//		{
-//			cameraRotationX += zRot;
-//			cam.transform.Rotate(new Vector3(Time.deltaTime*zRot*-rotateSpeed,0,0));
-//		}
-//		if(cameraRotationX < minCamX)//if lower than min rotation, correct
-//		{
-//			cam.transform.Rotate(new Vector3(Time.deltaTime*.6f*-rotateSpeed,0,0));
-//			cameraRotationX += Time.deltaTime*-.3f*-rotateSpeed;
-//		}
-//		if(cameraRotationX > maxCamX)//if higher than max rotation, correct
-//		{
-//			cameraRotationX += Time.deltaTime*.3f*-rotateSpeed;
-//			cam.transform.Rotate(new Vector3(Time.deltaTime*-.6f*-rotateSpeed,0,0));
-//		}	
-//	}
 }
 
