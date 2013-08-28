@@ -17,8 +17,15 @@ public class Player : MonoBehaviour {
 	public float gravityRate;
 	float currentSpeed, ySpeed;
 	Vector3 moveDirection;
-	CharacterController cc;
+	CharacterController cc, camController;
 	
+	#region CameraVars
+	public int rotateSpeed;
+	public float minCamX, maxCamX, cameraRotationX;
+	public Vector3 cameraOffset; //Position relative to player
+	public GameObject cam;
+	#endregion
+
 	public enum playerState
 	{
 		idle,
@@ -32,6 +39,7 @@ public class Player : MonoBehaviour {
 	void Awake () 
 	{
 		cc = GetComponent<CharacterController>();
+		camController = cam.GetComponent<CharacterController>();
 		currentSpeed = maxSpeed;
 	}
 	
@@ -40,12 +48,24 @@ public class Player : MonoBehaviour {
 	{
 		PlayerInput();
 		Movement();
+		CameraControl();
+		//CameraMinMax();
 	}
 	
 	void PlayerInput()
 	{
 		if(Input.GetButtonDown("Jump"))
 			if(cc.isGrounded) Jump ();
+
+	}
+	
+	void OnGUI()
+	{
+		if(!Screen.lockCursor)
+		{
+			if(GUI.Button(new Rect(0,0,Screen.width/12,Screen.width/25),"Lock Cursor"))
+				Screen.lockCursor = true;
+		}
 	}
 	
 	void Movement()
@@ -65,4 +85,47 @@ public class Player : MonoBehaviour {
 	{
 		ySpeed = jumpSpeed*Time.deltaTime;
 	}
+	
+	void CameraControl()//Controls camera view
+	{
+//		cam.transform.LookAt(transform);
+//		if(cam.transform.localPosition.x > minCamX && cam.transform.localPosition.x < maxCamX)
+//			camController.Move(Vector3.right*Input.GetAxis("Mouse X")*rotateSpeed*Time.deltaTime);
+//		else
+//		{
+//			if(cam.transform.localPosition.x < minCamX)
+//				cam.transform.localPosition = new Vector3(minCamX,cam.transform.localPosition.y,cam.transform.localPosition.z);
+//			if(cam.transform.localPosition.x > maxCamX)
+//				cam.transform.localPosition = new Vector3(maxCamX,cam.transform.localPosition.y,cam.transform.localPosition.z);
+//		}
+		//cam.transform.rotation = Quaternion.Euler(0,transform.rotation.eulerAngles.y,0);
+	}
+
+//	void CameraMinMax()//Correct vertical camera to stay within bounds
+//	{
+//		float zRot;
+//		if(Input.GetAxis("Mouse Y")>.5)
+//			zRot=.5f;
+//		else if(Input.GetAxis("Mouse Y")<-.5)
+//			zRot=-.5f;
+//		else
+//			zRot = Input.GetAxis("Mouse Y");
+//
+//		if(cameraRotationX >= minCamX && cameraRotationX <= maxCamX)
+//		{
+//			cameraRotationX += zRot;
+//			cam.transform.Rotate(new Vector3(Time.deltaTime*zRot*-rotateSpeed,0,0));
+//		}
+//		if(cameraRotationX < minCamX)//if lower than min rotation, correct
+//		{
+//			cam.transform.Rotate(new Vector3(Time.deltaTime*.6f*-rotateSpeed,0,0));
+//			cameraRotationX += Time.deltaTime*-.3f*-rotateSpeed;
+//		}
+//		if(cameraRotationX > maxCamX)//if higher than max rotation, correct
+//		{
+//			cameraRotationX += Time.deltaTime*.3f*-rotateSpeed;
+//			cam.transform.Rotate(new Vector3(Time.deltaTime*-.6f*-rotateSpeed,0,0));
+//		}	
+//	}
 }
+
