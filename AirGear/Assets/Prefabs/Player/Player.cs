@@ -19,6 +19,15 @@ public class Player : MonoBehaviour {
 	Vector3 moveDirection;
 	CharacterController cc;
 	
+	public enum playerState
+	{
+		idle,
+		moving,
+		jumping,
+		wallriding,
+		grinding,
+	}
+	
 	// Use this for initialization
 	void Awake () 
 	{
