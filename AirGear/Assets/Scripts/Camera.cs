@@ -18,24 +18,26 @@ public class Camera : MonoBehaviour {
 	// Update is called once per frame
 	void LateUpdate () 
 	{
-//		player.transform.Rotate(player.transform.eulerAngles.x,Input.GetAxis("Mouse X")*rotateSpeed.x,0);
-//		transform.RotateAround(player.transform.position,new Vector3(Input.GetAxis("Mouse Y")*rotateSpeed.y,0,0),rotateSpeed.y*Time.deltaTime);
-//		camRotation = Quaternion.Euler(0,player.transform.eulerAngles.y,0);
-//		transform.position = player.transform.position - (camRotation*offset);
-//		
-//		transform.LookAt(player.transform);
 		if(Mathf.Abs(Input.GetAxis("Camera X")) > 0.01)
 		inputVector.x += Input.GetAxis("Camera X")*rotateSpeed.x*Time.deltaTime;
 		if(Mathf.Abs(Input.GetAxis("Camera Y")) > 0.01)
 		inputVector.y += Input.GetAxis("Camera Y")*rotateSpeed.y*Time.deltaTime;
 		
+		//Keep vertical rotation within bounds specified in the inspector
 		inputVector.y = ClampAngle(inputVector.y,verticalLimit.x,verticalLimit.y);
-		Quaternion rotation = Quaternion.Euler(inputVector.y,inputVector.x,0);
-		Vector3 position = player.position - rotation*offset;
 		
+		//Set rotation variable to match the current input
+		Quaternion rotation = Quaternion.Euler(inputVector.y,inputVector.x,0);
+		
+		//Set the position relative to the player and based on rotation
+		Vector3 position = player.position - rotation*offset;
+	
+		//Actually perform the changes
 		transform.rotation = rotation;
-		player.transform.rotation = Quaternion.Euler(0,inputVector.x,0);
 		transform.position = position;
+		
+		//Rotate the player so they're facing where the camera is facing
+		player.transform.rotation = Quaternion.Euler(0,inputVector.x,0);//should only do this if the player instances speed is greater than 0
 		
 	}
 	
