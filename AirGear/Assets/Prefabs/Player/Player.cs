@@ -13,10 +13,10 @@ public class Player : MonoBehaviour {
 			//Grinding
 	#endregion
 	
-	public int maxSpeed, jumpSpeed, maxGravity;
-	public float gravityRate;
+	public int maxSpeed, jumpSpeed, wallSpeed, maxGravity;
+	public float gravityRate, charWidth;
 	float currentSpeed, ySpeed;
-	Vector3 moveDirection, euler;
+	Vector3 moveDirection;
 	CharacterController cc;
 
 	public enum playerState
@@ -40,30 +40,46 @@ public class Player : MonoBehaviour {
 	{
 		PlayerInput();
 		Movement();
-		euler = transform.eulerAngles;
+		WallCollision();
 	}
 	
 	void PlayerInput()
 	{
 		if(Input.GetButtonDown("Jump"))
 			if(cc.isGrounded) Jump ();
-
 	}
 	
 	void Movement()
 	{
-		if(!cc.isGrounded)
-		{
-			if(ySpeed > maxGravity)
-				ySpeed += gravityRate*Time.deltaTime;
-			else
-				ySpeed = maxGravity;
-		}
+		Gravity();
 		moveDirection.y = 0;
 		moveDirection.Normalize();
 		moveDirection = new Vector3(Input.GetAxis("Horizontal"), ySpeed, Input.GetAxis("Vertical"));
 		moveDirection = transform.TransformDirection(moveDirection);
-		cc.Move (moveDirection*maxSpeed*Time.deltaTime);
+		cc.Move (moveDirection*currentSpeed*Time.deltaTime);
+	}
+	
+	void Gravity()
+	{
+		if(!cc.isGrounded)
+		{
+			if(ySpeed > maxGravity) ySpeed += gravityRate*Time.deltaTime;
+			else ySpeed = maxGravity;
+		}	
+		else
+			currentSpeed = maxSpeed;
+	}
+	
+	void WallCollision()
+	{
+		RaycastHit hit;
+		if(Physics.Raycast(transform.position,Vector3.right,out hit,charWidth/2))
+		{
+			if(currentSpeed > wallSpeed)
+				currentSpeed--;
+			if(Input.GetButtonDown("Jump"))
+				Jump ();
+		}
 	}
 	
 	void Jump()

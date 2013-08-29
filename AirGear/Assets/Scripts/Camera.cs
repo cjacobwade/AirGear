@@ -18,6 +18,29 @@ public class Camera : MonoBehaviour {
 	// Update is called once per frame
 	void LateUpdate () 
 	{
+		CameraControl();
+	}
+	
+	float ClampAngle(float angle, float min, float max)
+	{
+		if(angle < -360)
+			angle +=360;
+		if(angle > 360)
+			angle -= 360;
+		return Mathf.Clamp(angle,min,max);
+	}
+	
+	void OnGUI()
+	{
+		if(!Screen.lockCursor)
+		{
+			if(GUI.Button(new Rect(0,0,Screen.width/12,Screen.width/25),"Lock Cursor"))
+				Screen.lockCursor = true;
+		}
+	}
+	
+	void CameraControl()
+	{
 		if(Mathf.Abs(Input.GetAxis("Camera X")) > 0.01)
 		inputVector.x += Input.GetAxis("Camera X")*rotateSpeed.x*Time.deltaTime;
 		if(Mathf.Abs(Input.GetAxis("Camera Y")) > 0.01)
@@ -38,24 +61,5 @@ public class Camera : MonoBehaviour {
 		
 		//Rotate the player so they're facing where the camera is facing
 		player.transform.rotation = Quaternion.Euler(0,inputVector.x,0);//should only do this if the player instances speed is greater than 0
-		
-	}
-	
-	float ClampAngle(float angle, float min, float max)
-	{
-		if(angle < -360)
-			angle +=360;
-		if(angle > 360)
-			angle -= 360;
-		return Mathf.Clamp(angle,min,max);
-	}
-	
-	void OnGUI()
-	{
-		if(!Screen.lockCursor)
-		{
-			if(GUI.Button(new Rect(0,0,Screen.width/12,Screen.width/25),"Lock Cursor"))
-				Screen.lockCursor = true;
-		}
 	}
 }
