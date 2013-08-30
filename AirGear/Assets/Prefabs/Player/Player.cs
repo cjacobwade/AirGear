@@ -14,7 +14,9 @@ public class Player : MonoBehaviour {
 	#endregion
 	
 	public int maxSpeed, jumpSpeed, wallSpeed, maxGravity;
-	public float gravityRate, charWidth;
+	public float xSpeed, zSpeed, gravityRate, charWidth, speedRate, decayRate;
+	public GameObject rotationCube;
+	bool wall;
 	public float currentSpeed, ySpeed;
 	public Vector3 moveDirection;
 	CharacterController cc;
@@ -34,7 +36,7 @@ public class Player : MonoBehaviour {
 	void Awake () 
 	{
 		cc = GetComponent<CharacterController>();
-		currentSpeed = maxSpeed;
+		currentSpeed = 0;
 	}
 	
 	// Update is called once per frame
@@ -42,7 +44,14 @@ public class Player : MonoBehaviour {
 	{
 		PlayerInput();
 		PlayerState();
+		SpeedControl();
 		Movement();
+	}
+	
+	void LateUpdate()
+	{
+		rotationCube.transform.position = transform.position;
+		transform.rotation = Quaternion.Lerp(transform.rotation,rotationCube.transform.rotation,0.7f);
 	}
 	
 	void PlayerInput()
@@ -55,38 +64,74 @@ public class Player : MonoBehaviour {
 	{
 		RaycastHit hit;
 		Vector3 center = transform.position, right = transform.right;
-		if(Physics.Raycast(center,right,out hit,charWidth/1.3f)||Physics.Raycast(center,-right,out hit,charWidth/1.3f))
-			WallRide();
+		if(Physics.Raycast(center,right,out hit,charWidth/1.2f)) WallRide(hit, "Right");
+		else if(Physics.Raycast(center,-right,out hit,charWidth/1.2f)) WallRide(hit, "Left");
 		else
 		{
-			currentSpeed = maxSpeed;
-			if(moveDirection.x == 0 && moveDirection.z == 0) currentState = playerState.idle;
+			if(moveDirection.x == 0 && moveDirection.z == 0)
+			{
+				currentState = playerState.idle;
+				currentSpeed = 0;
+			}
 			else
 			{
 				if(cc.isGrounded||(currentState != playerState.jumping && currentState != playerState.grinding))
+				{
 					currentState = playerState.moving;
+					wall = false;
+				}
 			}
 		}
 	}
 	
 	void Movement()
 	{
+		if(cc.isGrounded)
+			maxGravity = -1;
+		else
+			maxGravity = -9;
 		if(ySpeed > maxGravity)
 			ySpeed += gravityRate*Time.deltaTime;
+		else ySpeed = maxGravity;
 		moveDirection.y = 0;
 		moveDirection.Normalize();
-		moveDirection = new Vector3(Input.GetAxis("Horizontal"), ySpeed, Input.GetAxis("Vertical"));
+		xSpeed = Input.GetAxis("Horizontal");
+		zSpeed = Input.GetAxis("Vertical");
+		moveDirection = new Vector3(xSpeed*currentSpeed, ySpeed*maxSpeed,zSpeed*currentSpeed);
 		moveDirection = transform.TransformDirection(moveDirection);
-		cc.Move (moveDirection*currentSpeed*Time.deltaTime);
+		cc.Move (moveDirection*Time.deltaTime);
 	}
 	
-	void WallRide()
+	void WallRide(RaycastHit hit, string direction)
 	{
 		currentState = playerState.wallriding;
 		if(currentSpeed > wallSpeed)
 			currentSpeed--;
 		if(Input.GetButtonDown("Jump"))
 			WallJump();
+		
+		//This code is borrowed from UnityAnswers and I don't understand it :(
+		Vector3 axis;
+		axis = (direction == "Right") ? Vector3.Cross(transform.right,-hit.normal) : Vector3.Cross(-transform.right,-hit.normal);
+	    if(axis != Vector3.zero)
+	    {
+			float angle = (direction == "Right") ? Mathf.Atan2(Vector3.Magnitude(axis), Vector3.Dot(transform.right,-hit.normal)): Mathf.Atan2(Vector3.Magnitude(axis), Vector3.Dot(-transform.right,-hit.normal));
+		 	//Vector3 meow = transform.RotateAround(axis,angle);
+			if(!cc.isGrounded)
+				rotationCube.transform.Rotate(axis,angle,Space.World);
+        }
+	}
+	
+	void SpeedControl()
+	{
+		if(zSpeed > 0.01f) 
+			if(currentSpeed < maxSpeed) currentSpeed += speedRate;
+		if(zSpeed < -0.01f) 
+			if(currentSpeed < maxSpeed*0.4f) currentSpeed += speedRate*0.4f;
+		if(Mathf.Abs(xSpeed) > 0.01f) 
+			if(currentSpeed < maxSpeed*0.4f) currentSpeed += speedRate*0.4f;
+		if(currentSpeed > 7) currentSpeed -= decayRate;
+		if(currentSpeed < 7) currentSpeed = 7;
 	}
 	
 	void Jump()
