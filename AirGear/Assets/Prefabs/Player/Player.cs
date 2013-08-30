@@ -15,8 +15,8 @@ public class Player : MonoBehaviour {
 	
 	public int maxSpeed, jumpSpeed, wallSpeed, maxGravity;
 	public float gravityRate, charWidth;
-	float currentSpeed, ySpeed;
-	Vector3 moveDirection;
+	public float currentSpeed, ySpeed;
+	public Vector3 moveDirection;
 	CharacterController cc;
 
 	public enum playerState
@@ -27,6 +27,8 @@ public class Player : MonoBehaviour {
 		wallriding,
 		grinding,
 	}
+	
+	public playerState currentState;
 	
 	// Use this for initialization
 	void Awake () 
@@ -39,8 +41,8 @@ public class Player : MonoBehaviour {
 	void Update () 
 	{
 		PlayerInput();
+		PlayerState();
 		Movement();
-		WallCollision();
 	}
 	
 	void PlayerInput()
@@ -49,9 +51,28 @@ public class Player : MonoBehaviour {
 			if(cc.isGrounded) Jump ();
 	}
 	
+	void PlayerState()
+	{
+		RaycastHit hit;
+		Vector3 center = transform.position, right = transform.right;
+		if(Physics.Raycast(center,right,out hit,charWidth/1.3f)||Physics.Raycast(center,-right,out hit,charWidth/1.3f))
+			WallRide();
+		else
+		{
+			currentSpeed = maxSpeed;
+			if(moveDirection.x == 0 && moveDirection.z == 0) currentState = playerState.idle;
+			else
+			{
+				if(cc.isGrounded||(currentState != playerState.jumping && currentState != playerState.grinding))
+					currentState = playerState.moving;
+			}
+		}
+	}
+	
 	void Movement()
 	{
-		Gravity();
+		if(ySpeed > maxGravity)
+			ySpeed += gravityRate*Time.deltaTime;
 		moveDirection.y = 0;
 		moveDirection.Normalize();
 		moveDirection = new Vector3(Input.GetAxis("Horizontal"), ySpeed, Input.GetAxis("Vertical"));
@@ -59,31 +80,23 @@ public class Player : MonoBehaviour {
 		cc.Move (moveDirection*currentSpeed*Time.deltaTime);
 	}
 	
-	void Gravity()
+	void WallRide()
 	{
-		if(!cc.isGrounded)
-		{
-			if(ySpeed > maxGravity) ySpeed += gravityRate*Time.deltaTime;
-			else ySpeed = maxGravity;
-		}	
-		else
-			currentSpeed = maxSpeed;
-	}
-	
-	void WallCollision()
-	{
-		RaycastHit hit;
-		if(Physics.Raycast(transform.position,Vector3.right,out hit,charWidth/2))
-		{
-			if(currentSpeed > wallSpeed)
-				currentSpeed--;
-			if(Input.GetButtonDown("Jump"))
-				Jump ();
-		}
+		currentState = playerState.wallriding;
+		if(currentSpeed > wallSpeed)
+			currentSpeed--;
+		if(Input.GetButtonDown("Jump"))
+			WallJump();
 	}
 	
 	void Jump()
 	{
+		ySpeed = jumpSpeed*Time.deltaTime;
+	}
+	
+	void WallJump()
+	{
+		
 		ySpeed = jumpSpeed*Time.deltaTime;
 	}
 

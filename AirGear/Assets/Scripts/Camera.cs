@@ -4,6 +4,7 @@ using System.Collections;
 public class Camera : MonoBehaviour {
 	
 	public Transform player;
+	private Player _player;
 	public Vector2 rotateSpeed, verticalLimit;
 	Vector2 inputVector;
 	Vector3 offset;
@@ -12,6 +13,7 @@ public class Camera : MonoBehaviour {
 	// Use this for initialization
 	void Awake () 
 	{
+		_player = player.gameObject.GetComponent<Player>();
 		offset = player.transform.position - transform.position;
 	}
 	
@@ -37,6 +39,13 @@ public class Camera : MonoBehaviour {
 			if(GUI.Button(new Rect(0,0,Screen.width/12,Screen.width/25),"Lock Cursor"))
 				Screen.lockCursor = true;
 		}
+		
+		GUI.Label(new Rect(Screen.width-100,0,500,25),_player.moveDirection.ToString());
+		GUI.Label(new Rect(Screen.width-100,25,500,25),_player.ySpeed.ToString());
+		GUI.Label(new Rect(Screen.width-100,50,500,25),_player.currentSpeed.ToString());
+		GUI.Label(new Rect(Screen.width-100,75,500,25),_player.currentState.ToString());
+		rotateSpeed.x = GUI.VerticalSlider(new Rect(Screen.width*9.8f/10,100,10,400),rotateSpeed.x,30,200);
+		rotateSpeed.y = GUI.VerticalSlider(new Rect(Screen.width*9.7f/10,100,10,400),rotateSpeed.y,30,200);
 	}
 	
 	void CameraControl()
@@ -60,6 +69,7 @@ public class Camera : MonoBehaviour {
 		transform.position = position;
 		
 		//Rotate the player so they're facing where the camera is facing
-		player.transform.rotation = Quaternion.Euler(0,inputVector.x,0);//should only do this if the player instances speed is greater than 0
+		if(_player.currentState != Player.playerState.wallriding)
+			player.transform.rotation = Quaternion.Lerp(player.transform.rotation, Quaternion.Euler(0,inputVector.x,0),0.5f);//should only do this if the player instances speed is greater than 0
 	}
 }
