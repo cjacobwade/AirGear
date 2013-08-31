@@ -1,10 +1,10 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class Camera : MonoBehaviour {
+public class PlayerCam : MonoBehaviour {
 	
 	public Transform player;
-	private Player _player;
+	Player _player;
 	public Vector2 rotateSpeed, verticalLimit;
 	CharacterController cc;
 	Vector2 inputVector;
@@ -41,15 +41,16 @@ public class Camera : MonoBehaviour {
 			if(GUI.Button(new Rect(0,0,Screen.width/12,Screen.width/25),"Lock Cursor"))
 				Screen.lockCursor = true;
 		}
-		
 		GUI.Label(new Rect(Screen.width-100,0,500,25),_player.moveDirection.ToString());
-		GUI.Label(new Rect(Screen.width-100,25,500,25),_player.ySpeed.ToString());
-		GUI.Label(new Rect(Screen.width-100,50,500,25),_player.currentSpeed.ToString());
-		GUI.Label(new Rect(Screen.width-100,75,500,25),_player.currentState.ToString());
-		GUI.Label(new Rect(Screen.width-100,95,500,25),rotateSpeed.ToString());
+		GUI.Label(new Rect(Screen.width-100,18,500,25),_player.ySpeed.ToString());
+		GUI.Label(new Rect(Screen.width-100,36,500,25),_player.currentSpeed.ToString());
+		GUI.Label(new Rect(Screen.width-100,54,500,25),_player.currentState.ToString());
+		GUI.Label(new Rect(Screen.width-100,72,500,25),rotateSpeed.ToString());
+		GUI.Label(new Rect(Screen.width-100,90,500,25),_player.transform.position.ToString());
+		GUI.Label(new Rect(Screen.width-100,108,500,25),_player.hookOffset.ToString());
+		if(_player.wallHit.transform)GUI.Label(new Rect(Screen.width-100,126,500,25),_player.wallHit.transform.position.ToString());
 		rotateSpeed.x = GUI.VerticalSlider(new Rect(Screen.width*9.7f/10,200,10,400),rotateSpeed.x,30,200);
 		rotateSpeed.y = GUI.VerticalSlider(new Rect(Screen.width*9.8f/10,200,10,400),rotateSpeed.y,30,200);
-		
 	}
 	
 	void CameraControl()
